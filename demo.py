@@ -67,9 +67,13 @@ def main(args):
     if not os.path.isfile(video_file):
         exit(f"Input video \'{video_file}\' does not exist!")
 
-    output_path = osp.join('./output/demo_output', os.path.basename(video_file).replace('.mp4', ''))
+    output_path = os.path.join(args.output_folder, os.path.basename(video_file).replace('.mp4', ''))
     Path(output_path).mkdir(parents=True, exist_ok=True)
-    image_folder, num_frames, img_shape = video_to_images(video_file, return_info=True)
+
+    cropped_frames_output_path = os.path.join(output_path, 'tcmr_cropped_frames')
+    image_folder, num_frames, img_shape = video_to_images(video_file,
+                                                          img_folder=cropped_frames_output_path,
+                                                          return_info=True)
 
     print(f"Input video number of frames {num_frames}\n")
     orig_height, orig_width = img_shape[:2]
@@ -320,21 +324,23 @@ def main(args):
 
     """ Save rendered video """
     vid_name = os.path.basename(video_file)
-    save_name = f'tcmr_{vid_name.replace(".mp4", "")}_output.mp4'
+    save_name = f'{vid_name.replace(".mp4", "")}_tcmr_result.mp4'
     save_path = os.path.join(output_path, save_name)
 
     images_to_video(img_folder=output_img_folder, output_vid_file=save_path)
     images_to_video(img_folder=input_img_folder, output_vid_file=os.path.join(output_path, vid_name))
     print(f"Saving result video to {os.path.abspath(save_path)}")
-    shutil.rmtree(output_img_folder)
-    shutil.rmtree(input_img_folder)
-    shutil.rmtree(image_folder)
+    # shutil.rmtree(output_img_folder)
+    # shutil.rmtree(input_img_folder)
+    # shutil.rmtree(image_folder)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--vid_file', type=str, default='sample_video.mp4', help='input video path or youtube link')
+
+    parser.add_argument('--output_folder', type=str, help='output folder to write results')
 
     parser.add_argument('--model', type=str, default='./data/base_data/tcmr_demo_model.pth.tar', help='path to pretrained model weight')
 
